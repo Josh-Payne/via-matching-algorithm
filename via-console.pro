@@ -13,5 +13,4 @@ SOURCES += main.cpp
 
 HEADERS +=
 
-DISTFILES += \
-    com.txt
+DISTFILES +=
