@@ -10,6 +10,13 @@ using json = nlohmann::json;
 json companyJson;
 json proJson;
 
+static int LOCATION_MATCH = 5;
+static int INDUSTRY_MATCH1 = 3;
+static int INDUSTRY_MATCH2 = 1;
+static int INDUSTRY_MATCH3 = 1;
+static int FIRST_MATCH = 5;
+
+std::vector<std::pair<std::pair<int, int>, int>> matches;
 
 struct project {
     int id;
@@ -17,6 +24,7 @@ struct project {
     std::string name;
     std::string geo[2];
     std::string industries[4];
+    int candidates = 2;
 };
 
 struct fellow {
@@ -61,6 +69,51 @@ void populateFellowList(const json& proJson, std::vector<fellow>& FellowList) {
     }
 }
 
+bool locationMatches(fellow f, project p) {
+    for (std::string lf : f.geo) {
+        for (std::string lp : p.geo) {
+            if (!lf.compare(lp)) return true;
+        }
+    }
+    return false;
+}
+
+int industryMatches(fellow f, project p) {
+    int counter = 0;
+    for (std::string lf : f.industries) {
+        for (std::string lp : p.industries) {
+            if (!lf.compare(lp)) counter++;
+        }
+    }
+    if (counter > 3) counter = 3;
+    return counter;
+}
+
+void createMatches(std::vector<fellow>& FellowList, std::vector<project>& ProjectList) {
+    for (fellow f : FellowList) {
+        for (project p : ProjectList) {
+            int score = 0;
+            if (locationMatches(f,p)) score += LOCATION_MATCH;
+            if (industryMatches(f,p) == 1) score += INDUSTRY_MATCH1; //3
+            if (industryMatches(f,p) == 2) score += INDUSTRY_MATCH2; //4
+            if (industryMatches(f,p) == 3) score += INDUSTRY_MATCH3; //5
+            std::pair<std::pair<int, int>,int> pVal;
+
+            pVal = std::make_pair(std::make_pair(f.id,p.id), score); // (fellow/project match, score)
+            matches.push_back(pVal);
+        }
+    }
+}
+
+std::vector<std::pair<int, int>> optimalMatches() {
+    std::vector<std::pair<int, int>> currMatches;
+    for (std::pair<std::pair<int, int>, int> m : matches) {
+
+
+    }
+    return currMatches;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -70,11 +123,9 @@ int main(int argc, char *argv[])
     pro >> proJson;
     std::vector<fellow> FellowList;
     std::vector<project> ProjectList;
-    std::cout << "a" << std::endl;
     populateFellowList(proJson, FellowList);
     populateProjectList(companyJson, ProjectList);
-
-    std::cout << FellowList[2].name << std::endl;
-
+    createMatches(FellowList, ProjectList);
+    std::cout << "a" << std::endl;
     return a.exec();
 }
