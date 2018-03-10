@@ -98,24 +98,29 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
             if (industryMatches(f,p) == 2) score += INDUSTRY_MATCH2; //4
             if (industryMatches(f,p) == 3) score += INDUSTRY_MATCH3; //5
             std::pair<std::pair<int, int>,int> pVal;
-
             pVal = std::make_pair(std::make_pair(f.id,p.id), score); // (fellow/project match, score)
             matches.push_back(pVal);
         }
     }
 }
 
-std::vector<std::pair<int, int>> optimalMatches() {
+std::vector<std::pair<int, int>> optimalMatches(std::vector<fellow>& FellowList, std::vector<project>& ProjectList) {
     std::vector<std::pair<int, int>> currMatches;
+    std::vector<std::pair<int, int>> finalMatches;
+    for (fellow f : FellowList) {
+        for (project p : ProjectList) {
+
+        }
+    }
     for (std::pair<std::pair<int, int>, int> m : matches) {
+        currMatches.push_back(m);
 
 
     }
     return currMatches;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
     std::ifstream company("/Users/joshpayne1/via-console/company.json");
     std::ifstream pro("/Users/joshpayne1/via-console/pro.json");
@@ -126,6 +131,7 @@ int main(int argc, char *argv[])
     populateFellowList(proJson, FellowList);
     populateProjectList(companyJson, ProjectList);
     createMatches(FellowList, ProjectList);
+    int j = optimalMatches(FellowList, ProjectList)
     std::cout << "a" << std::endl;
     return a.exec();
 }
