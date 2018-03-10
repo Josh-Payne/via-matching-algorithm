@@ -16,7 +16,7 @@ static int INDUSTRY_MATCH2 = 1;
 static int INDUSTRY_MATCH3 = 1;
 static int FIRST_MATCH = 5;
 
-std::vector<std::pair<std::pair<int, int>, int>> matches;
+std::vector<std::vector<std::pair<std::pair<int, int>, int>>> matches;
 
 struct project {
     int id;
@@ -91,6 +91,7 @@ int industryMatches(fellow f, project p) {
 
 void createMatches(std::vector<fellow>& FellowList, std::vector<project>& ProjectList) {
     for (fellow f : FellowList) {
+        std::vector<std::pair<std::pair<int, int>,int>> projectMatchesPerFellow;
         for (project p : ProjectList) {
             int score = 0;
             if (locationMatches(f,p)) score += LOCATION_MATCH;
@@ -99,25 +100,30 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
             if (industryMatches(f,p) == 3) score += INDUSTRY_MATCH3; //5
             std::pair<std::pair<int, int>,int> pVal;
             pVal = std::make_pair(std::make_pair(f.id,p.id), score); // (fellow/project match, score)
-            matches.push_back(pVal);
+            projectMatchesPerFellow.push_back(pVal);
         }
+        matches.push_back(projectMatchesPerFellow);
     }
 }
 
-std::vector<std::pair<int, int>> optimalMatches(std::vector<fellow>& FellowList, std::vector<project>& ProjectList) {
-    std::vector<std::pair<int, int>> currMatches;
-    std::vector<std::pair<int, int>> finalMatches;
-    for (fellow f : FellowList) {
-        for (project p : ProjectList) {
+std::vector<std::pair<int, int>> optimalMatches(std::vector<fellow>& workingFellowList, std::vector<project>& workingProjectList, int index, int score, vector<pair<int, int>> path) {
+    if (index == 1) {
+        for (project : workingProjectList) {
+            int scoreFinal = score;
+            scoreFinal = score + matches.get(workingFellowList[0].id, project.id);
+            if scoreFinal > max {
+                max = scoreFinal;
+                path[1] = (workingFellowList[0], project);
+            }
+        }
+        return path;
+    }
 
+    else {
+        for (project : workingProjectList) {
+            return optimalMatches(workingFellowList - workingFellowList[index], workingProjectList - project, index - 1, score + matches.get(workingFellowList[index].id, project.id), path + pair<fellow[index].id, project.id>)
         }
     }
-    for (std::pair<std::pair<int, int>, int> m : matches) {
-        currMatches.push_back(m);
-
-
-    }
-    return currMatches;
 }
 
 int main(int argc, char *argv[]) {
@@ -131,7 +137,7 @@ int main(int argc, char *argv[]) {
     populateFellowList(proJson, FellowList);
     populateProjectList(companyJson, ProjectList);
     createMatches(FellowList, ProjectList);
-    int j = optimalMatches(FellowList, ProjectList)
+    int j = optimalMatches(FellowList, ProjectList, int(FellowList.size()))
     std::cout << "a" << std::endl;
     return a.exec();
 }
