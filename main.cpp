@@ -106,30 +106,59 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
     }
 }
 
-std::vector<std::pair<int, int>> optimalMatches(std::vector<fellow>& workingFellowList, std::vector<project>& workingProjectList, int index, int score, vector<pair<int, int>> path) {
+int max = 0;
+
+int getScore(int fel, int proj) {
+    for (std::vector<std::pair<std::pair<int, int>, int>> matchRow : matches) {
+        for (std::pair<std::pair<int, int>, int> match : matchRow) {
+            if (match.first.first == fel && match.first.second == proj) {
+                return match.second;
+            }
+        }
+    }
+    return 0;
+}
+
+std::vector<project> removeProject(std::vector<project>& pList, project rmP) {
+    std::vector<project> newList;
+    for (project p : pList) {
+        if (p.id != rmP.id) {
+            newList.push_back(p);
+        }
+    }
+    return newList;
+}
+
+std::vector<std::pair<int, int>> optimalMatches(std::vector<fellow>& workingFellowList, std::vector<project>& workingProjectList, int index, int score, std::vector<std::pair<int, int>> path) {
     if (index == 1) {
-        for (project : workingProjectList) {
+        std::cout << "base index: " << index << std::endl;
+        for (project p : workingProjectList) {
             int scoreFinal = score;
-            scoreFinal = score + matches.get(workingFellowList[0].id, project.id);
-            if scoreFinal > max {
+            scoreFinal = score + getScore(workingFellowList[0].id, p.id);
+            if (scoreFinal > max) {
                 max = scoreFinal;
-                path[1] = (workingFellowList[0], project);
+                path[1] = std::make_pair(workingFellowList[0].id, p.id);
             }
         }
         return path;
     }
 
     else {
-        for (project : workingProjectList) {
-            return optimalMatches(workingFellowList - workingFellowList[index], workingProjectList - project, index - 1, score + matches.get(workingFellowList[index].id, project.id), path + pair<fellow[index].id, project.id>)
+        for (project p : workingProjectList) {
+            std::cout << "fellowlist size: " << workingFellowList.size() << std::endl;
+            std::cout << "index: " << index << std::endl;
+            std::vector<project> newProjectList = removeProject(workingProjectList, p);
+            path.push_back(std::make_pair(workingFellowList[index].id, p.id));
+            score = score + getScore(workingFellowList[index].id, p.id);
+            return optimalMatches(workingFellowList, newProjectList, index - 1, score, path);
         }
     }
 }
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
-    std::ifstream company("/Users/joshpayne1/via-console/company.json");
-    std::ifstream pro("/Users/joshpayne1/via-console/pro.json");
+    std::ifstream company("/Users/joshpayne1/via-console/companySmall.json");
+    std::ifstream pro("/Users/joshpayne1/via-console/proSmall.json");
     company >> companyJson;
     pro >> proJson;
     std::vector<fellow> FellowList;
@@ -137,7 +166,13 @@ int main(int argc, char *argv[]) {
     populateFellowList(proJson, FellowList);
     populateProjectList(companyJson, ProjectList);
     createMatches(FellowList, ProjectList);
-    int j = optimalMatches(FellowList, ProjectList, int(FellowList.size()))
-    std::cout << "a" << std::endl;
+    std::vector<std::pair<int, int>> path;
+    std::vector<std::pair<int, int>> j = optimalMatches(FellowList, ProjectList, int(FellowList.size()), 0, path);
+    for (std::pair<int, int> p : path) {
+        std::cout << p.first <<", "<< p.second << std::endl;
+    }
+
+    std::cout << "Finished running." << std::endl;
+
     return a.exec();
 }
