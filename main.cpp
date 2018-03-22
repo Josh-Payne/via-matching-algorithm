@@ -16,7 +16,7 @@ static int INDUSTRY_MATCH2 = 1;
 static int INDUSTRY_MATCH3 = 1;
 static int FIRST_MATCH = 5;
 
-std::vector<std::vector<std::pair<std::pair<int, int>, int>>> matches;
+std::vector<std::vector<std::pair<std::pair<int, int>, int>>> matches; // this is the grid. If a scorePair is a pair of ([fellow to project match] and [score for that matching]), it's an array of scorePair arrays.
 
 struct project {
     int id;
