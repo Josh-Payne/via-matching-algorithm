@@ -82,10 +82,11 @@ int industryMatches(fellow f, project p) {
     int counter = 0;
     for (std::string lf : f.industries) {
         for (std::string lp : p.industries) {
-            if (!lf.compare(lp)) counter++;
+            if (lf.compare(lp)==0&&lp.compare("")!=0) {
+                counter++;
+            }
         }
     }
-    if (counter > 3) counter = 3;
     return counter;
 }
 
@@ -95,9 +96,10 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
         for (project p : ProjectList) {
             int score = 0;
             if (locationMatches(f,p)) score += LOCATION_MATCH;
-            if (industryMatches(f,p) == 1) score += INDUSTRY_MATCH1; //3
-            if (industryMatches(f,p) == 2) score += INDUSTRY_MATCH2; //4
-            if (industryMatches(f,p) == 3) score += INDUSTRY_MATCH3; //5
+            int iM = industryMatches(f,p);
+            if (iM == 1) score += INDUSTRY_MATCH1; //3
+            if (iM == 2) score += INDUSTRY_MATCH2; //4
+            if (iM >= 3) score += INDUSTRY_MATCH3; //5
             std::pair<std::pair<int, int>,int> pVal;
             pVal = std::make_pair(std::make_pair(f.id,p.id), score); // (fellow/project match, score)
             projectMatchesPerFellow.push_back(pVal);
@@ -107,52 +109,59 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
 }
 
 int max = 0;
+std::vector<std::pair<int, int>> finalPath;
 
-int getScore(int fel, int proj) {
-    for (std::vector<std::pair<std::pair<int, int>, int>> matchRow : matches) {
-        for (std::pair<std::pair<int, int>, int> match : matchRow) {
-            if (match.first.first == fel && match.first.second == proj) {
-                return match.second;
-            }
-        }
-    }
-    return 0;
-}
-
-std::vector<project> removeProject(std::vector<project>& pList, project rmP) {
-    std::vector<project> newList;
-    for (project p : pList) {
-        if (p.id != rmP.id) {
-            newList.push_back(p);
-        }
-    }
-    return newList;
-}
-
-std::vector<std::pair<int, int>> optimalMatches(std::vector<fellow>& workingFellowList, std::vector<project>& workingProjectList, int index, int score, std::vector<std::pair<int, int>> path) {
-    if (index == 1) {
+std::vector<std::pair<int, int>> optimalMatches(std::vector<std::vector<std::pair<std::pair<int, int>, int>>> matches, int index, int score, std::vector<std::pair<int, int>> path) {
+    if (index == 0) {
         std::cout << "base index: " << index << std::endl;
-        for (project p : workingProjectList) {
-            int scoreFinal = score;
-            scoreFinal = score + getScore(workingFellowList[0].id, p.id);
-            if (scoreFinal > max) {
-                max = scoreFinal;
-                path[1] = std::make_pair(workingFellowList[0].id, p.id);
+
+            for (std::pair<std::pair<int, int>, int> p : matches[index]) {
+                bool check = true;
+                for (std::pair<int, int> match : path) {
+                    if (match.second==p.first.second||match.first==p.first.first) {
+                        check = false;
+                    }
+                }
+                if (check) {
+                    int scoreFinal;
+                    scoreFinal = score + p.second;
+                    if (scoreFinal > max) {
+                        max = scoreFinal;
+                        std::cout << "af" << max << std::endl;
+                        path.push_back(p.first);
+                        finalPath = path;
+                    }
+                }
             }
-        }
         return path;
     }
-
     else {
-        for (project p : workingProjectList) {
-            std::cout << "fellowlist size: " << workingFellowList.size() << std::endl;
-            std::cout << "index: " << index << std::endl;
-            std::vector<project> newProjectList = removeProject(workingProjectList, p);
-            path.push_back(std::make_pair(workingFellowList[index].id, p.id));
-            score = score + getScore(workingFellowList[index].id, p.id);
-            return optimalMatches(workingFellowList, newProjectList, index - 1, score, path);
+        std::cout << matches[index][0].second << std::endl;
+        for (std::pair<std::pair<int, int>, int> p : matches[index]) {
+            bool check = true;
+            std::cout << "a" << std::endl;
+            for (std::pair<int, int> match : path) {
+                if (match.second==p.first.second||match.first==p.first.first) {
+                    check = false;
+                }
+            }
+            if (check) {
+                path.push_back(p.first);
+                score = score + p.second;
+
+                return optimalMatches(matches, index - 1, score, path);
+
+            }
+
         }
+
     }
+//    for (std::vector<std::pair<std::pair<int, int>, int>> m : matches) {
+//        for (std::pair<std::pair<int, int>, int> p : m) {
+
+//            //std::cout << p.first.first << ", " << p.first.second << ": " << p.second << std::endl;
+//        }
+//    }
 }
 
 int main(int argc, char *argv[]) {
@@ -166,12 +175,18 @@ int main(int argc, char *argv[]) {
     populateFellowList(proJson, FellowList);
     populateProjectList(companyJson, ProjectList);
     createMatches(FellowList, ProjectList);
+    std::cout << "------------------" << std::endl;
+    for (std::vector<std::pair<std::pair<int, int>, int>> m : matches) {
+        for (std::pair<std::pair<int, int>, int> p : m) {
+            std::cout << p.first.first << ", " << p.first.second << ": " << p.second << std::endl;
+        }
+    }
+    std::cout << "------------------" << std::endl;
     std::vector<std::pair<int, int>> path;
-    std::vector<std::pair<int, int>> j = optimalMatches(FellowList, ProjectList, int(FellowList.size()), 0, path);
-    for (std::pair<int, int> p : path) {
+    std::vector<std::pair<int, int>> j = optimalMatches(matches, int(FellowList.size())-1, 0, path);
+    for (std::pair<int, int> p : finalPath) {
         std::cout << p.first <<", "<< p.second << std::endl;
     }
-
     std::cout << "Finished running." << std::endl;
 
     return a.exec();
