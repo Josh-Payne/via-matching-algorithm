@@ -17,6 +17,7 @@ static int INDUSTRY_MATCH3 = 1;
 static int FIRST_MATCH = 5;
 
 std::vector<std::vector<std::pair<std::pair<int, int>, int>>> matches; // this is the grid. If a scorePair is a pair of ([fellow to project match] and [score for that matching]), it's an array of scorePair arrays.
+std::vector<std::vector<std::pair<std::pair<int, int>, int>>> cleanedMatches;
 
 struct project {
     int id;
@@ -91,9 +92,9 @@ int industryMatches(fellow f, project p) {
 }
 
 void createMatches(std::vector<fellow>& FellowList, std::vector<project>& ProjectList) {
-    for (fellow f : FellowList) {
+    for (project p : ProjectList) {
         std::vector<std::pair<std::pair<int, int>,int>> projectMatchesPerFellow;
-        for (project p : ProjectList) {
+        for (fellow f : FellowList) {
             int score = 0;
             if (locationMatches(f,p)) score += LOCATION_MATCH;
             int iM = industryMatches(f,p);
@@ -101,7 +102,7 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
             if (iM == 2) score += INDUSTRY_MATCH2; //4
             if (iM >= 3) score += INDUSTRY_MATCH3; //5
             std::pair<std::pair<int, int>,int> pVal;
-            pVal = std::make_pair(std::make_pair(f.id,p.id), score); // (fellow/project match, score)
+            pVal = std::make_pair(std::make_pair(f.id,p.id), score); // create pair of (fellow/project match), (score)
             projectMatchesPerFellow.push_back(pVal);
         }
         matches.push_back(projectMatchesPerFellow);
@@ -111,57 +112,54 @@ void createMatches(std::vector<fellow>& FellowList, std::vector<project>& Projec
 int max = 0;
 std::vector<std::pair<int, int>> finalPath;
 
-std::vector<std::pair<int, int>> optimalMatches(std::vector<std::vector<std::pair<std::pair<int, int>, int>>> matches, int index, int score, std::vector<std::pair<int, int>> path) {
-    if (index == 0) {
-        std::cout << "base index: " << index << std::endl;
-
-            for (std::pair<std::pair<int, int>, int> p : matches[index]) {
-                bool check = true;
-                for (std::pair<int, int> match : path) {
-                    if (match.second==p.first.second||match.first==p.first.first) {
-                        check = false;
-                    }
-                }
-                if (check) {
-                    int scoreFinal;
-                    scoreFinal = score + p.second;
-                    if (scoreFinal > max) {
-                        max = scoreFinal;
-                        std::cout << "af" << max << std::endl;
-                        path.push_back(p.first);
-                        finalPath = path;
-                    }
-                }
-            }
-        return path;
-    }
-    else {
-        std::cout << matches[index][0].second << std::endl;
-        for (std::pair<std::pair<int, int>, int> p : matches[index]) {
+void optimalMatches(std::vector<std::vector<std::pair<std::pair<int, int>, int>>> cleanedMatches, int index, int score, std::vector<std::pair<int, int>> path) {
+    if (index == 1) { // if the path reaches the second to last row, find the available node that yields the highest path score
+        for (std::pair<std::pair<int, int>, int> p : cleanedMatches[index]) {
             bool check = true;
-            std::cout << "a" << std::endl;
             for (std::pair<int, int> match : path) {
                 if (match.second==p.first.second||match.first==p.first.first) {
                     check = false;
                 }
             }
             if (check) {
-                path.push_back(p.first);
-                score = score + p.second;
-
-                return optimalMatches(matches, index - 1, score, path);
-
+                int scoreFinal;
+                scoreFinal = score + p.second;
+                if (scoreFinal > max) { // if our current highest scoring path is higher scoring than our stored path...
+                    max = scoreFinal;
+                    path.push_back(p.first);
+                    finalPath = path; // assign highest scoring path to the final path
+                }
             }
-
         }
-
     }
-//    for (std::vector<std::pair<std::pair<int, int>, int>> m : matches) {
-//        for (std::pair<std::pair<int, int>, int> p : m) {
+    else {
+        for (std::pair<std::pair<int, int>, int> p : cleanedMatches[index]) { // recursively looks at each viable path in the fellow/project grid
+            std::vector<std::pair<int, int>> newPath = path;
+            bool check = true;
+            for (std::pair<int, int> match : newPath) {
+                if (match.second==p.first.second||match.first==p.first.first) {
+                    check = false;
+                }
+            }
+            if (check) {
+                newPath.push_back(p.first);
+                score = score + p.second;
+                optimalMatches(cleanedMatches, index - 1, score, newPath);
+            }
+        }
+    }
+}
 
-//            //std::cout << p.first.first << ", " << p.first.second << ": " << p.second << std::endl;
-//        }
-//    }
+void cleanGraph() {
+    for (std::vector<std::pair<std::pair<int, int>, int>> m : matches) {
+        std::vector<std::pair<std::pair<int, int>,int>> projectMatchesPerFellow;
+        for (std::pair<std::pair<int, int>, int> f : m) {
+            if (f.second != 0) {
+                projectMatchesPerFellow.push_back(f);
+            }
+        }
+        cleanedMatches.push_back(projectMatchesPerFellow);
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -174,20 +172,16 @@ int main(int argc, char *argv[]) {
     std::vector<project> ProjectList;
     populateFellowList(proJson, FellowList);
     populateProjectList(companyJson, ProjectList);
-    createMatches(FellowList, ProjectList);
-    std::cout << "------------------" << std::endl;
-    for (std::vector<std::pair<std::pair<int, int>, int>> m : matches) {
-        for (std::pair<std::pair<int, int>, int> p : m) {
-            std::cout << p.first.first << ", " << p.first.second << ": " << p.second << std::endl;
-        }
-    }
-    std::cout << "------------------" << std::endl;
+    std::cout << "Matching:" << std::endl;
+    createMatches(FellowList, ProjectList); // create matches
+    std::cout <<"Finished matching. Cleaning graph:"<< std::endl;
+    cleanGraph(); // remove fellow/match pairings that have a score of zero to speed up path production (threshold can be modified)
+    std::cout << "Finished cleaning graph. Generating paths:" << std::endl;
     std::vector<std::pair<int, int>> path;
-    std::vector<std::pair<int, int>> j = optimalMatches(matches, int(FellowList.size())-1, 0, path);
+    optimalMatches(cleanedMatches, int(cleanedMatches.size())-1, 0, path);
     for (std::pair<int, int> p : finalPath) {
         std::cout << p.first <<", "<< p.second << std::endl;
     }
-    std::cout << "Finished running." << std::endl;
-
+    std::cout <<"Finished running."<< std::endl;
     return a.exec();
 }
