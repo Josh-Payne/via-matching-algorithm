@@ -6,9 +6,9 @@ IndustryMatch = 3
 IndustryMatch2 = 1
 IndustryMatch3Plus = 1
 
-with open('company.json', 'r') as jsonFile:
+with open('companySmall.json', 'r') as jsonFile:
 	companyData=json.load(jsonFile)
-with open('pro.json', 'r') as jsonFile:
+with open('proSmall.json', 'r') as jsonFile:
 	proData=json.load(jsonFile)
 dim = max(len(companyData), len(proData))
 graph = np.zeros((dim,dim))

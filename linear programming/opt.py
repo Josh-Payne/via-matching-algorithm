@@ -1,14 +1,15 @@
 ## Adapted from Benjamin Van Roy, Stanford University
 
 import numpy as np
-from scipy import optimize
+from scipy import optimize as op
+import traceback
 
 def linprog(A, b, c, A_eq=None, b_eq=None, lb=None, ub=None, form='symmetric', print_message=True):
-
+	options = {"disp": True, "maxiter": 5000}
 	if form=='symmetric':
-		sol = optimize.linprog(c=-np.array(c)[0], A_ub=A, b_ub=np.array(b.T)[0])
+		sol = op.linprog(c=-np.array(c)[0], A_ub=A, b_ub=np.array(b.T)[0], options=options)
 	elif form=='standard':
-		sol = optimize.linprog(c=-np.array(c)[0], A_eq=A, b_eq=np.array(b.T)[0])
+		sol = op.linprog(c=-np.array(c)[0], A_eq=A, b_eq=np.array(b.T)[0], options=options)
 	elif form=='general':
 		if (lb is None) and (ub is not None):
 			lb = -np.inf*np.ones(ub.shape)
@@ -18,12 +19,12 @@ def linprog(A, b, c, A_eq=None, b_eq=None, lb=None, ub=None, form='symmetric', p
 			bounds = zip([lb[i,0] for i in range(len(lb))], [ub[i,0] for i in range(len(ub))])
 		else:
 			bounds = (None, None)
-		sol = optimize.linprog(c=-np.array(c)[0],
+		sol = op.linprog(c=-np.array(c)[0],
 							   A_ub=A,
 							   b_ub=np.array(b.T)[0],
 							   A_eq=A_eq,
 							   b_eq=np.array(b_eq.T)[0],
-							   bounds=bounds)
+							   bounds=bounds, options=options)
 	else:
 		print 'ERROR: unrecognized LP form ' + form
 		return np.nan, np.nan

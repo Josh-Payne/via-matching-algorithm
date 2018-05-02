@@ -1,6 +1,6 @@
 import numpy as np
 import graph as graph
-import optimize as op
+import opt as op
 
 dim = graph.graph.shape[0]
 
