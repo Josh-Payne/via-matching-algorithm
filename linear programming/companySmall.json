@@ -1,0 +1,34 @@
+[
+ {
+   "#": 1,
+   "ProjectID": 1,
+   "Company": "Yalo",
+   "Industry1": "",
+   "Industry2": "Tech - AI",
+   "Industry3": "",
+   "Industry4": "",
+   "Industry5": "",
+   "OPEN?": "OPEN",
+   "FIELD10": "",
+   "Region": "LatAm",
+   "Country": "Mexico",
+   "City": "Mexico City",
+   "OPEN?": "OPEN"
+ },
+ {
+   "#": 2,
+   "ProjectID": 2,
+   "Company": "Lyft",
+   "Industry1": "Tech",
+   "Industry2": "",
+   "Industry3": "",
+   "Industry4": "",
+   "Industry5": "",
+   "OPEN?": "OPEN",
+   "FIELD10": "",
+   "Region": "LatAm",
+   "Country": "Mexico",
+   "City": "Los Cabos",
+   "OPEN?": "OPEN"
+ }
+]

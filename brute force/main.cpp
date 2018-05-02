@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+//#include <QCoreApplication>
 #include <iostream>
 #include <fstream>
 #include <json.hpp>
