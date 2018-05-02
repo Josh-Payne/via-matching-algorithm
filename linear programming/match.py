@@ -18,9 +18,8 @@ capacities = np.hstack([zeros,capacities])
 b1 = np.ones((dim,1))
 b2 = np.ones((dim,1))*-1
 b = np.vstack([b1,b2])
-print("checkpoint reached")
+print("Cost, capacity graphs built.")
 sol = op.min_cost_flow(costs,capacities,b)
-print("checkpoint completed")
 for i in range(dim):
 	for j in range(dim):
 		if sol[0].item((i,j+dim))==1:
